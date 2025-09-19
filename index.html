@@ -2,8 +2,6 @@
   <head>
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.misc.min.js"></script>
-      <script src="https://unpkg.com/super-hands@^3.0.5/dist/super-hands.min.js"></script>
   </head>
   <body>
     <a-scene renderer="antialias:true;colorManagement:true;physicallyCorrectLights:true"
@@ -35,22 +33,65 @@
       <a-entity 
         id="player" 
         position="0 0 0" 
-        player-move="controllerListenerId: #controller-data;
-                      navigationMeshClass: groundPlane;">
+        movement-controls>
       
         <a-camera></a-camera>
 
-        <a-entity id="leftHand" meta-touch-controls="hand: left" raycaster="objects: .raycastable"></a-entity>
-        <a-entity id="rightHand" meta-touch-controls="hand: right" raycaster="objects: .raycastable"></a-entity>
+        <a-entity sphere-collider="objects: a-box" id="leftHand" laser-controls="hand: left" raycaster="objects: .raycastable" player-move-controls="speed: .2"></a-entity>
+        <a-entity sphere-collider="objects: a-box" id="rightHand" laser-controls="hand: right" raycaster="objects: .raycastable" player-rotation-controls="speed: 20"></a-entity>
 
-        <!--<a-entity hand-tracking-controls="hand: left;"></a-entity>
-        <a-entity hand-tracking-controls="hand: right;"></a-entity>
+        <a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: left;"></a-entity>
+        <a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: right;"></a-entity>
 
-        <a-entity sphere-collider="objects: a-box" super-hands hand-controls="hand: left"></a-entity>
+        <!--<a-entity sphere-collider="objects: a-box" super-hands hand-controls="hand: left"></a-entity>
         <a-entity sphere-collider="objects: a-box" super-hands hand-controls="hand: right"></a-entity>-->
 
       </a-entity>
       
     </a-scene>
   </body>
+
+  <script>
+    const playerRig = document.querySelector("#player")
+
+    AFRAME.registerComponent("player-move-controls", {
+      schema: {
+        speed: {type: 'float', default: .1}
+      },
+
+      init: function() {
+        
+        this.el.addEventListener('axismove', (e) => {
+          const [x, y] = e.detail.axis;
+          
+          player.position.x += x * this.speed;
+          player.position.y += y * this.speed;
+        });
+
+      },
+      
+      tick: function() {
+
+      }
+    });
+
+    AFRAME.registerComponent("player-rotation-controls", {
+      schema: {
+        speed: {type: 'float', default: 1.0}
+      },
+
+      init: function() {
+        this.el.addEventListener('axismove', (e) => {
+          const [x, y] = e.detail.axis;
+          
+          player.rotation.x += x * this.speed;
+          player.rotation.y += y * this.speed;
+        });
+      },
+      
+      tick: function() {
+
+      }
+    });
+  </script>
 </html>
