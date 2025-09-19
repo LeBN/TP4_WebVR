@@ -8,8 +8,6 @@
       xr-mode-ui="enabled: true"
       webxr="optionalFeatures: bounded-floor, hand-tracking"
       background="color: #212"
-      environment
-      shadow="type: pcfsoft"
       cursor="rayOrigin: mouse; fuse: false"
       raycaster="objects: .raycastable">
       <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" shadow="receive: true; cast:true;"></a-box>
@@ -28,12 +26,14 @@
         </a-entity>
       </a-entity>
 
-      <!-- Hand controls -->
-      <a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .raycastable"></a-entity>
-      <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .raycastable" line="color: #118A7E"></a-entity>
+      <a-entity environment="preset: default; lighting: distant; shadow: true; shadowSize: 20"></a-entity>
 
-      <a-entity hand-tracking-controls="hand: left"></a-entity>
-      <a-entity hand-tracking-controls="hand: right"></a-entity>
+      <!-- Hand controls -->
+      <a-entity id="leftHand" laser-controls="hand: left" hand-tracking-controls="hand: left" hand-controls="hand: left; handModelStyle: lowPoly; color: #ffcccc" raycaster="objects: .raycastable"></a-entity>
+      <a-entity id="rightHand" laser-controls="hand: right" hand-tracking-controls="hand: right" hand-controls="hand: left; handModelStyle: lowPoly; color: #ffcccc" raycaster="objects: .raycastable" line="color: #118A7E"></a-entity>
+
+      <!--<a-entity hand-tracking-controls="hand: left"></a-entity>
+      <a-entity hand-tracking-controls="hand: right"></a-entity>-->
     </a-scene>
   </body>
 </html>
