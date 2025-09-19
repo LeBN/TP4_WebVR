@@ -13,7 +13,7 @@
       <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" shadow="receive: true; cast:true;"></a-box>
       <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E" shadow="receive: true; cast:true;"></a-sphere>
       <a-entity light="type:directional; castShadow:true;" position="1 1 1"></a-entity>
-      <a-entity light="type: ambient; color: #BBB"></a-entity>
+      <a-entity light="type: ambient; color: #111"></a-entity>
       <a-sky color="#ECECEC"></a-sky>
 
       <a-entity
@@ -26,7 +26,7 @@
         </a-entity>
       </a-entity>
 
-      <a-entity environment="preset: default; lighting: distant; shadow: true; shadowSize: 20"></a-entity>
+      <a-entity environment shadow="receive: true"></a-entity>
 
        <a-entity 
         id="player" 
@@ -35,21 +35,16 @@
                      navigationMeshClass: groundPlane;">
       
         <a-camera></a-camera>
-      
-        <a-entity 
-            id="controller-data" 
-            controller-listener="leftControllerId:  #left-controller; 
-                                rightControllerId: #right-controller;">
-        </a-entity>
 
-        <a-entity id="leftHand" laser-controls="hand: left" hand-tracking-controls="hand: left" hand-controls="hand: left; handModelStyle: toon; color: #ffcccc" raycaster="objects: .raycastable"></a-entity>
-        <a-entity id="rightHand" laser-controls="hand: right" hand-tracking-controls="hand: right" hand-controls="hand: right; handModelStyle: toon; color: #ffcccc" raycaster="objects: .raycastable" line="color: #118A7E"></a-entity>
+        <a-entity id="leftHand" laser-controls="hand: left; handModelStyle: lowPoly;" raycaster="objects: .raycastable"></a-entity>
+        <a-entity id="rightHand" laser-controls="hand: right; handModelStyle: lowPoly;" lowPoly; color: #ffcccc" raycaster="objects: .raycastable" line="color: #118A7E"></a-entity>
 
+        <a-entity hand-tracking-controls="hand: left; handModelStyle: lowPoly; color: #ffcccc"></a-entity>
+        <a-entity hand-tracking-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc"></a-entity>
 
       </a-entity>
       <!-- Hand controls -->
-      <!--<a-entity hand-tracking-controls="hand: left"></a-entity>
-      <a-entity hand-tracking-controls="hand: right"></a-entity>-->
+      <!---->
     </a-scene>
   </body>
 </html>
