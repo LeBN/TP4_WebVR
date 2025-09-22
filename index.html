@@ -56,7 +56,7 @@
       schema: {
         moveSpeed: { type: 'number', default: 0.1 },
         turnSpeed: { type: 'number', default: 2 },
-        deadZone: { type: 'number', default: 0.2 }
+        deadZone: { type: 'number', default: 0.01 }
       },
 
       init() {
@@ -98,9 +98,11 @@
 
         // === Déplacement avec stick gauche ===
         if (this.leftGamepad && this.leftGamepad.axes.length >= 2) {
-          const [lx, ly] = this.leftGamepad.axes;
+          const [lx, ly] = [this.leftGamepad.axes[2], this.leftGamepad.axes[3]];
           const mag = Math.sqrt(lx * lx + ly * ly);
+
           if (mag > this.data.deadZone) {
+            console.log("aaa");
             const angleRad = THREE.MathUtils.degToRad(rot.y);
             const dx = (-ly * Math.sin(angleRad) + lx * Math.cos(angleRad)) * this.data.moveSpeed;
             const dz = (-ly * Math.cos(angleRad) - lx * Math.sin(angleRad)) * this.data.moveSpeed;
@@ -119,7 +121,7 @@
           if (Math.abs(rx) > this.data.deadZone) {
             rig.setAttribute('rotation', {
               x: rot.x,
-              y: rot.y + rx * this.data.turnSpeed,
+              y: rot.y - rx * this.data.turnSpeed,
               z: rot.z
             });
           }
