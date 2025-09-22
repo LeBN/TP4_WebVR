@@ -10,24 +10,6 @@
       background="color: #212"
       cursor="rayOrigin: mouse; fuse: false"
       raycaster="objects: .raycastable">
-      <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" shadow="receive: true; cast:true;"></a-box>
-      <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E" shadow="receive: true; cast:true;"></a-sphere>
-
-      <a-entity light="type:directional; castShadow:true;" position="1 1 1"></a-entity>
-      <a-entity light="type: ambient; color: #111"></a-entity>
-      <a-sky color="#ECECEC"></a-sky>
-
-      <a-entity
-        position="0 1.6 0"
-        camera look-controls="magicWindowTrackingEnabled: false; touchEnabled: false; mouseEnabled: false">
-        <a-entity
-          id="fadeBackground"
-          geometry="primitive: sphere; radius: 2.5"
-          material="color: #999999; side: back; shader: flat; blending: subtractive;" visible="false">
-        </a-entity>
-      </a-entity>
-
-      <a-entity environment shadow="receive: true"></a-entity>
 
       <a-entity 
         id="player" 
@@ -47,11 +29,30 @@
 
       </a-entity>
       
+      <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" shadow="receive: true; cast:true;"></a-box>
+      <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E" shadow="receive: true; cast:true;"></a-sphere>
+
+      <a-entity light="type:directional; castShadow:true;" position="1 1 1"></a-entity>
+      <a-entity light="type: ambient; color: #111"></a-entity>
+      <a-sky color="#ECECEC"></a-sky>
+
+      <a-entity
+        position="0 1.6 0"
+        camera look-controls="magicWindowTrackingEnabled: false; touchEnabled: false; mouseEnabled: false">
+        <a-entity
+          id="fadeBackground"
+          geometry="primitive: sphere; radius: 2.5"
+          material="color: #999999; side: back; shader: flat; blending: subtractive;" visible="false">
+        </a-entity>
+      </a-entity>
+
+      <a-entity environment shadow="receive: true"></a-entity>
+      
     </a-scene>
   </body>
 
   <script>
-    /*const playerRig = document.querySelector("#player")
+    const playerRig = document.querySelector("#player")
 
     AFRAME.registerComponent("player-move-controls", {
       schema: {
@@ -91,6 +92,6 @@
       tick: function() {
 
       }
-    });*/
+    });
   </script>
 </html>
