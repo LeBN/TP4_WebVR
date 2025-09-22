@@ -46,7 +46,8 @@
         hoverable
         draggable
         droppable
-        stretchable></a-box>
+        stretchable 
+        dynamic-body></a-box>
       <a-sphere 
         position="0 2 -5" 
         radius="0.5" 
@@ -57,7 +58,10 @@
         hoverable
         draggable
         droppable
-        stretchable></a-sphere>
+        stretchable
+        dynamic-body></a-sphere>
+
+      <a-plane scale="100 100 100" position="0 -.1 0" rotation="90 0 0" static-body></a-plane>
 
       <a-entity light="type:directional; castShadow:true;" position="1 1 1"></a-entity>
       <a-entity light="type: ambient; color: #111"></a-entity>
@@ -73,7 +77,7 @@
         </a-entity>
       </a-entity>
 
-      <a-entity environment shadow="receive: true"></a-entity>
+      <a-entity environment="preset: forest" shadow="receive: true"></a-entity>
       
     </a-scene>
   </body>
