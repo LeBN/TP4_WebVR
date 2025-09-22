@@ -7,7 +7,6 @@
     <a-scene renderer="antialias:true;colorManagement:true;physicallyCorrectLights:true"
       xr-mode-ui="enabled: true"
       webxr="optionalFeatures: bounded-floor, hand-tracking"
-      background="color: #212"
       cursor="rayOrigin: mouse; fuse: false"
       raycaster="objects: .raycastable">
 
@@ -60,7 +59,7 @@
       },
 
       init: function() {
-        
+
         this.el.addEventListener('axismove', (e) => {
           const [x, y] = e.detail.axis;
           let position = playerRig.getAttribute("position");
