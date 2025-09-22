@@ -12,7 +12,6 @@
       raycaster="objects: .raycastable">
       <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" shadow="receive: true; cast:true;"></a-box>
       <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E" shadow="receive: true; cast:true;"></a-sphere>
-      <a-box hoverable grabbable stretchable draggable droppable color="blue" position="0 0 -1"></a-box>
 
       <a-entity light="type:directional; castShadow:true;" position="1 1 1"></a-entity>
       <a-entity light="type: ambient; color: #111"></a-entity>
@@ -63,9 +62,9 @@
         
         this.el.addEventListener('axismove', (e) => {
           const [x, y] = e.detail.axis;
-          
-          player.position.x += x * this.speed;
-          player.position.y += y * this.speed;
+          let position = playerRig.getAttribute("position");
+
+          playerRig.setAttribute('position', `${position[0] + y * this.speed} ${position[1]} ${position[2] + x * this.speed}`);
         });
 
       },
@@ -84,8 +83,8 @@
         this.el.addEventListener('axismove', (e) => {
           const [x, y] = e.detail.axis;
           
-          player.rotation.x += x * this.speed;
-          player.rotation.y += y * this.speed;
+          playerRig.rotation.x += x * this.speed;
+          playerRig.rotation.y += y * this.speed;
         });
       },
       
