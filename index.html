@@ -17,13 +17,14 @@
       
         <a-camera></a-camera>
 
-        <a-entity sphere-collider="objects: a-box" id="leftHand" laser-controls="hand: left" raycaster="objects: .raycastable"   ></a-entity>
-        <a-entity sphere-collider="objects: a-box" id="rightHand" laser-controls="hand: right" raycaster="objects: .raycastable" ></a-entity>
+        <a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .raycastable"   ></a-entity>
+        <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .raycastable" ></a-entity>
 
-        <a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: left;"></a-entity>
+        <!--<a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: left;"></a-entity>
         <a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: right;"></a-entity>
-
-        <!--<a-entity sphere-collider="objects: a-box" super-hands hand-controls="hand: left"></a-entity>
+          sphere-collider="objects: a-box"
+          sphere-collider="objects: a-box"
+        <a-entity sphere-collider="objects: a-box" super-hands hand-controls="hand: left"></a-entity>
         <a-entity sphere-collider="objects: a-box" super-hands hand-controls="hand: right"></a-entity>-->
 
       </a-entity>
@@ -54,67 +55,78 @@
     AFRAME.registerComponent('joystick-locomotion', {
       schema: {
         moveSpeed: { type: 'number', default: 0.1 },
-        turnSpeed: { type: 'number', default: 2 }, // degrés/frame
-        deadZone:  { type: 'number', default: 0.2 }
+        turnSpeed: { type: 'number', default: 2 },
+        deadZone: { type: 'number', default: 0.2 }
       },
 
       init() {
-        this.gamepads = [];
+        this.leftGamepad = null;
+        this.rightGamepad = null;
+
+        this.el.sceneEl.addEventListener('enter-vr', () => {
+          const xrSession = this.el.sceneEl.renderer.xr.getSession();
+          if (!xrSession) return;
+
+          xrSession.addEventListener('inputsourceschange', () => {
+            this.updateControllers(xrSession);
+          });
+
+          this.updateControllers(xrSession); // aussi au premier enter-vr
+        });
+      },
+
+      updateControllers(xrSession) {
+        const inputSources = xrSession.inputSources;
+        this.leftGamepad = null;
+        this.rightGamepad = null;
+
+        inputSources.forEach((source) => {
+          if (!source.gamepad) return;
+
+          if (source.handedness === 'left') {
+            this.leftGamepad = source.gamepad;
+          } else if (source.handedness === 'right') {
+            this.rightGamepad = source.gamepad;
+          }
+        });
       },
 
       tick() {
-        const pads = navigator.getGamepads ? navigator.getGamepads() : [];
-
-        this.gamepads = pads.filter(p => p && p.connected && p.pose);
-
-        let leftStick = [0, 0];
-        let rightStick = [0, 0];
-
-        // Trouve les axes des manettes gauche/droite
-        for (let pad of this.gamepads) {
-          const isLeft = pad.handedness === 'left';
-          const isRight = pad.handedness === 'right';
-          const axes = pad.axes;
-
-          if (isLeft && axes.length >= 2) {
-            leftStick = [axes[0], axes[1]]; // x, y
-          }
-          if (isRight && axes.length >= 4) {
-            rightStick = [axes[2], axes[3]]; // x, y
-          }
-        }
-
         const rig = this.el;
-        const position = rig.getAttribute('position');
-        const rotation = rig.getAttribute('rotation');
+        const pos = rig.getAttribute('position');
+        const rot = rig.getAttribute('rotation');
 
-        // ===== Déplacement avant/arrière/strafing (stick gauche) =====
-        const [lx, ly] = leftStick;
-        const magLeft = Math.sqrt(lx * lx + ly * ly);
-        if (magLeft > this.data.deadZone) {
-          // Calcul de direction par rapport à la rotation Y
-          const angle = THREE.MathUtils.degToRad(rotation.y);
-          const dx = (-ly * Math.sin(angle) + lx * Math.cos(angle)) * this.data.moveSpeed;
-          const dz = (-ly * Math.cos(angle) - lx * Math.sin(angle)) * this.data.moveSpeed;
+        // === Déplacement avec stick gauche ===
+        if (this.leftGamepad && this.leftGamepad.axes.length >= 2) {
+          const [lx, ly] = this.leftGamepad.axes;
+          const mag = Math.sqrt(lx * lx + ly * ly);
+          if (mag > this.data.deadZone) {
+            const angleRad = THREE.MathUtils.degToRad(rot.y);
+            const dx = (-ly * Math.sin(angleRad) + lx * Math.cos(angleRad)) * this.data.moveSpeed;
+            const dz = (-ly * Math.cos(angleRad) - lx * Math.sin(angleRad)) * this.data.moveSpeed;
 
-          rig.setAttribute('position', {
-            x: position.x + dx,
-            y: position.y,
-            z: position.z + dz
-          });
+            rig.setAttribute('position', {
+              x: pos.x + dx,
+              y: pos.y,
+              z: pos.z + dz
+            });
+          }
         }
 
-        // ===== Rotation yaw (stick droit) =====
-        const [rx, ry] = rightStick;
-        if (Math.abs(rx) > this.data.deadZone) {
-          rig.setAttribute('rotation', {
-            x: rotation.x,
-            y: rotation.y + rx * this.data.turnSpeed,
-            z: rotation.z
-          });
+        // === Rotation avec stick droit ===
+        if (this.rightGamepad && this.rightGamepad.axes.length >= 4) {
+          const [rx, ry] = [this.rightGamepad.axes[2], this.rightGamepad.axes[3]];
+          if (Math.abs(rx) > this.data.deadZone) {
+            rig.setAttribute('rotation', {
+              x: rot.x,
+              y: rot.y + rx * this.data.turnSpeed,
+              z: rot.z
+            });
+          }
         }
       }
     });
+
 
     /*const playerRig = document.querySelector("#player")
 
