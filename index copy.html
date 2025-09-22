@@ -1,50 +1,19 @@
 <html>
   <head>
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+    <script> delete AFRAME.components["grabbable"]; </script>
     <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@c-frame/aframe-physics-system@4.1.0/dist/aframe-physics-system.min.js"></script>
+    <script src="https://unpkg.com/super-hands@3.0.5/dist/super-hands.min.js"></script>
   </head>
   <body>
-    <a-scene renderer="antialias:true;colorManagement:true;physicallyCorrectLights:true"
-      xr-mode-ui="enabled: true"
-      webxr="optionalFeatures: bounded-floor, hand-tracking"
-      cursor="rayOrigin: mouse; fuse: false"
-      raycaster="objects: .raycastable">
-
-      <a-entity 
-        id="player" 
-        position="0 0 0" 
-        joystick-locomotion="moveSpeed: 0.1; turnSpeed: 2">
+    <a-scene
+      physics="debug: false">
       
-        <a-camera></a-camera>
+      <a-box position="-1 1.5 -3" rotation="0 45 0" color="#4CC3D9" shadow="receive: true; cast:true;" dynamic-body></a-box>
+      <a-sphere position="0 2 -5" radius="0.5" color="#EF2D5E" shadow="receive: true; cast:true;" dynamic-body></a-sphere>
 
-        <a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .raycastable"   ></a-entity>
-        <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .raycastable" ></a-entity>
-
-        <!--<a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: left;"></a-entity>
-        <a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: right;"></a-entity>
-          sphere-collider="objects: a-box"
-          sphere-collider="objects: a-box"
-        <a-entity sphere-collider="objects: a-box" super-hands hand-controls="hand: left"></a-entity>
-        <a-entity sphere-collider="objects: a-box" super-hands hand-controls="hand: right"></a-entity>-->
-
-      </a-entity>
-      
-      <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" shadow="receive: true; cast:true;"></a-box>
-      <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E" shadow="receive: true; cast:true;"></a-sphere>
-
-      <a-entity light="type:directional; castShadow:true;" position="1 1 1"></a-entity>
-      <a-entity light="type: ambient; color: #111"></a-entity>
-      <a-sky color="#ECECEC"></a-sky>
-
-      <a-entity
-        position="0 1.6 0"
-        camera look-controls="magicWindowTrackingEnabled: false; touchEnabled: false; mouseEnabled: false">
-        <a-entity
-          id="fadeBackground"
-          geometry="primitive: sphere; radius: 2.5"
-          material="color: #999999; side: back; shader: flat; blending: subtractive;" visible="false">
-        </a-entity>
-      </a-entity>
+      <a-plane scale="100 100 100" rotation="90 0 0" static-body></a-plane>
 
       <a-entity environment shadow="receive: true"></a-entity>
       
