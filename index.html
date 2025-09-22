@@ -1,54 +1,50 @@
 <html>
   <head>
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-physx@master/dist/physx.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-physx@master/dist/physx.release.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-physx@master/dist/physx.release.wasm.js"></script>
+
   </head>
   <body>
-    <a-scene renderer="antialias:true;colorManagement:true;physicallyCorrectLights:true"
-      xr-mode-ui="enabled: true"
-      webxr="optionalFeatures: bounded-floor, hand-tracking"
-      cursor="rayOrigin: mouse; fuse: false"
-      raycaster="objects: .raycastable">
+    <a-scene
+    renderer="antialias: true"
+    physics="driver: physx; wasmUrl: https://cdn.jsdelivr.net/gh/n5ro/aframe-physx@master/dist/physx.release.wasm"
+    xr-mode-ui="enabled: true">
 
-      <a-entity 
-        id="player" 
-        position="0 0 0" 
-        joystick-locomotion="moveSpeed: 0.1; turnSpeed: 2">
-      
+    <!-- Camera rig -->
+    <a-entity id="rig" position="0 1.6 0">
         <a-camera></a-camera>
 
-        <a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .raycastable"   ></a-entity>
-        <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .raycastable" ></a-entity>
-
-        <!--<a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: left;"></a-entity>
-        <a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: right;"></a-entity>
-          sphere-collider="objects: a-box"
-          sphere-collider="objects: a-box"
-        <a-entity sphere-collider="objects: a-box" super-hands hand-controls="hand: left"></a-entity>
-        <a-entity sphere-collider="objects: a-box" super-hands hand-controls="hand: right"></a-entity>-->
-
-      </a-entity>
-      
-      <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" shadow="receive: true; cast:true;"></a-box>
-      <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E" shadow="receive: true; cast:true;"></a-sphere>
-
-      <a-entity light="type:directional; castShadow:true;" position="1 1 1"></a-entity>
-      <a-entity light="type: ambient; color: #111"></a-entity>
-      <a-sky color="#ECECEC"></a-sky>
-
-      <a-entity
-        position="0 1.6 0"
-        camera look-controls="magicWindowTrackingEnabled: false; touchEnabled: false; mouseEnabled: false">
         <a-entity
-          id="fadeBackground"
-          geometry="primitive: sphere; radius: 2.5"
-          material="color: #999999; side: back; shader: flat; blending: subtractive;" visible="false">
-        </a-entity>
-      </a-entity>
+        id="left"
+        laser-controls="hand: left"
+        super-hands
+        sphere-collider="objects: .grabbable"
+        stretchable grabbable></a-entity>
 
-      <a-entity environment shadow="receive: true"></a-entity>
-      
+        <a-entity
+        id="right"
+        laser-controls="hand: right"
+        super-hands
+        sphere-collider="objects: .grabbable"
+        stretchable grabbable></a-entity>
+    </a-entity>
+
+    <!-- Sol -->
+    <a-plane static-body rotation="-90 0 0" width="20" height="20" color="#888"></a-plane>
+
+    <!-- Objet dynamique -->
+    <a-box position="0 2 -3"
+            width="0.5" height="0.5" depth="0.5"
+            color="red"
+            class="grabbable"
+            physx-body="type: dynamic; mass: 1;"
+            physics-grab></a-box>
+
     </a-scene>
+
+
   </body>
 
   <script>
@@ -110,7 +106,7 @@
             rig.setAttribute('position', {
               x: pos.x + dx,
               y: pos.y,
-              z: pos.z + dz
+              z: pos.z - dz
             });
           }
         }
@@ -130,64 +126,20 @@
     });
 
 
-    /*const playerRig = document.querySelector("#player")
+    AFRAME.registerComponent("physics-grab", {
+        init: function () {
+            let el = this.el;
 
-    function controllerReady(el) {
-      const tc = el.components['tracked-controls'];
-      return !!(tc && tc.controller && tc.controller.gamepad);
-    }
+            el.addEventListener("grab-start", function () {
+            el.setAttribute("physx-body", "type: kinematic;"); // désactive la gravité
+            });
 
-    AFRAME.registerComponent("player-move-controls", {
-      schema: {
-        speed: {type: 'float', default: .1}
-      },
-
-      init: function() {
-
-        this.el.addEventListener('axismove', (e) => {
-          const [x, y] = e.detail.axis;
-          let position = playerRig.getAttribute("position");
-          console.log(position);
-
-          playerRig.setAttribute('position', {
-            x: position.x + y * this.data.speed, 
-            y: position.y, 
-            z: position.z + x * this.data.speed
-          });
-        });
-
-      },
-      
-      tick: function() {
-
-      }
+            el.addEventListener("grab-end", function () {
+            el.setAttribute("physx-body", "type: dynamic;"); // réactive
+            });
+        }
     });
 
-    AFRAME.registerComponent("player-rotation-controls", {
-      schema: {
-        speed: {type: 'float', default: 1.0}
-      },
-
-      init: function() {
-        this.el.addEventListener('axismove', (e) => {
-          const [x, y] = e.detail.axis;
-          let rotation = playerRig.getAttribute("rotation");
-          console.log(rotation, this.data.speed, rotation.y + y * this.data.speed);
-          
-          playerRig.setAttribute('rotation', {
-            x: rotation.x + y * this.data.speed,
-            y: rotation.y, 
-            z: rotation.z + x * this.data.speed
-          });
-
-          console.log(playerRig.getAttribute("rotation"));
-        });
-      },
-      
-      tick: function() {
-
-      }
-    });*/
     
   </script>
 </html>

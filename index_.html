@@ -1,0 +1,193 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
+  </head>
+  <body>
+    <a-scene renderer="antialias:true;colorManagement:true;physicallyCorrectLights:true"
+      xr-mode-ui="enabled: true"
+      webxr="optionalFeatures: bounded-floor, hand-tracking"
+      cursor="rayOrigin: mouse; fuse: false"
+      raycaster="objects: .raycastable">
+
+      <a-entity 
+        id="player" 
+        position="0 0 0" 
+        joystick-locomotion="moveSpeed: 0.1; turnSpeed: 2">
+      
+        <a-camera></a-camera>
+
+        <a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .raycastable"   ></a-entity>
+        <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .raycastable" ></a-entity>
+
+        <!--<a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: left;"></a-entity>
+        <a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: right;"></a-entity>
+          sphere-collider="objects: a-box"
+          sphere-collider="objects: a-box"
+        <a-entity sphere-collider="objects: a-box" super-hands hand-controls="hand: left"></a-entity>
+        <a-entity sphere-collider="objects: a-box" super-hands hand-controls="hand: right"></a-entity>-->
+
+      </a-entity>
+      
+      <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" shadow="receive: true; cast:true;"></a-box>
+      <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E" shadow="receive: true; cast:true;"></a-sphere>
+
+      <a-entity light="type:directional; castShadow:true;" position="1 1 1"></a-entity>
+      <a-entity light="type: ambient; color: #111"></a-entity>
+      <a-sky color="#ECECEC"></a-sky>
+
+      <a-entity
+        position="0 1.6 0"
+        camera look-controls="magicWindowTrackingEnabled: false; touchEnabled: false; mouseEnabled: false">
+        <a-entity
+          id="fadeBackground"
+          geometry="primitive: sphere; radius: 2.5"
+          material="color: #999999; side: back; shader: flat; blending: subtractive;" visible="false">
+        </a-entity>
+      </a-entity>
+
+      <a-entity environment shadow="receive: true"></a-entity>
+      
+    </a-scene>
+  </body>
+
+  <script>
+    AFRAME.registerComponent('joystick-locomotion', {
+      schema: {
+        moveSpeed: { type: 'number', default: 0.1 },
+        turnSpeed: { type: 'number', default: 2 },
+        deadZone: { type: 'number', default: 0.01 }
+      },
+
+      init() {
+        this.leftGamepad = null;
+        this.rightGamepad = null;
+
+        this.el.sceneEl.addEventListener('enter-vr', () => {
+          const xrSession = this.el.sceneEl.renderer.xr.getSession();
+          if (!xrSession) return;
+
+          xrSession.addEventListener('inputsourceschange', () => {
+            this.updateControllers(xrSession);
+          });
+
+          this.updateControllers(xrSession); // aussi au premier enter-vr
+        });
+      },
+
+      updateControllers(xrSession) {
+        const inputSources = xrSession.inputSources;
+        this.leftGamepad = null;
+        this.rightGamepad = null;
+
+        inputSources.forEach((source) => {
+          if (!source.gamepad) return;
+
+          if (source.handedness === 'left') {
+            this.leftGamepad = source.gamepad;
+          } else if (source.handedness === 'right') {
+            this.rightGamepad = source.gamepad;
+          }
+        });
+      },
+
+      tick() {
+        const rig = this.el;
+        const pos = rig.getAttribute('position');
+        const rot = rig.getAttribute('rotation');
+
+        // === Déplacement avec stick gauche ===
+        if (this.leftGamepad && this.leftGamepad.axes.length >= 2) {
+          const [lx, ly] = [this.leftGamepad.axes[2], this.leftGamepad.axes[3]];
+          const mag = Math.sqrt(lx * lx + ly * ly);
+
+          if (mag > this.data.deadZone) {
+            console.log("aaa");
+            const angleRad = THREE.MathUtils.degToRad(rot.y);
+            const dx = (-ly * Math.sin(angleRad) + lx * Math.cos(angleRad)) * this.data.moveSpeed;
+            const dz = (-ly * Math.cos(angleRad) - lx * Math.sin(angleRad)) * this.data.moveSpeed;
+
+            rig.setAttribute('position', {
+              x: pos.x + dx,
+              y: pos.y,
+              z: pos.z - dz
+            });
+          }
+        }
+
+        // === Rotation avec stick droit ===
+        if (this.rightGamepad && this.rightGamepad.axes.length >= 4) {
+          const [rx, ry] = [this.rightGamepad.axes[2], this.rightGamepad.axes[3]];
+          if (Math.abs(rx) > this.data.deadZone) {
+            rig.setAttribute('rotation', {
+              x: rot.x,
+              y: rot.y - rx * this.data.turnSpeed,
+              z: rot.z
+            });
+          }
+        }
+      }
+    });
+
+
+    /*const playerRig = document.querySelector("#player")
+
+    function controllerReady(el) {
+      const tc = el.components['tracked-controls'];
+      return !!(tc && tc.controller && tc.controller.gamepad);
+    }
+
+    AFRAME.registerComponent("player-move-controls", {
+      schema: {
+        speed: {type: 'float', default: .1}
+      },
+
+      init: function() {
+
+        this.el.addEventListener('axismove', (e) => {
+          const [x, y] = e.detail.axis;
+          let position = playerRig.getAttribute("position");
+          console.log(position);
+
+          playerRig.setAttribute('position', {
+            x: position.x + y * this.data.speed, 
+            y: position.y, 
+            z: position.z + x * this.data.speed
+          });
+        });
+
+      },
+      
+      tick: function() {
+
+      }
+    });
+
+    AFRAME.registerComponent("player-rotation-controls", {
+      schema: {
+        speed: {type: 'float', default: 1.0}
+      },
+
+      init: function() {
+        this.el.addEventListener('axismove', (e) => {
+          const [x, y] = e.detail.axis;
+          let rotation = playerRig.getAttribute("rotation");
+          console.log(rotation, this.data.speed, rotation.y + y * this.data.speed);
+          
+          playerRig.setAttribute('rotation', {
+            x: rotation.x + y * this.data.speed,
+            y: rotation.y, 
+            z: rotation.z + x * this.data.speed
+          });
+
+          console.log(playerRig.getAttribute("rotation"));
+        });
+      },
+      
+      tick: function() {
+
+      }
+    });*/
+    
+  </script>
+</html>
