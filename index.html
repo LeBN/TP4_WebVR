@@ -133,15 +133,14 @@
           const mag = Math.sqrt(lx * lx + ly * ly);
 
           if (mag > this.data.deadZone) {
-            console.log("aaa");
             const angleRad = THREE.MathUtils.degToRad(rot.y);
-            const dx = (-ly * Math.sin(angleRad) + lx * Math.cos(angleRad)) * this.data.moveSpeed;
-            const dz = (-ly * Math.cos(angleRad) - lx * Math.sin(angleRad)) * this.data.moveSpeed;
+            const dx = (ly * Math.sin(angleRad) + lx * Math.cos(-angleRad)) * this.data.moveSpeed;
+            const dz = (ly * Math.cos(angleRad) + lx * Math.sin(-angleRad)) * this.data.moveSpeed;
 
             rig.setAttribute('position', {
               x: pos.x + dx,
               y: pos.y,
-              z: pos.z - dz
+              z: pos.z + dz
             });
           }
         }
