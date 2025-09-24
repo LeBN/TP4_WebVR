@@ -4,6 +4,7 @@
     <script> delete AFRAME.components["grabbable"]; </script>
     <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@c-frame/aframe-physics-system@4.1.0/dist/aframe-physics-system.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.x/dist/aframe-extras.min.js"></script>
     <script src="https://unpkg.com/super-hands@3.0.5/dist/super-hands.min.js"></script>
   </head>
   <body>
@@ -22,7 +23,7 @@
         <a-camera></a-camera>
 
         <a-entity id="left-hand-rig">
-          <a-entity super-hands hand-controls="hand: left" sphere-collider="objects: .interactable"></a-entity>
+          <a-entity constraint="target: #left-hand-rig;" super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body></a-entity>
         </a-entity>
         <a-entity  id="right-hand-rig">
           <a-entity super-hands hand-controls="hand: right" sphere-collider="objects: .interactable"></a-entity>
@@ -41,9 +42,10 @@
       </a-entity>
       
       <a-box 
-        position="-1 1.5 -3" 
+        position="-1 1.5 -5" 
         rotation="0 45 0" 
         color="#4CC3D9" 
+        scale="0.5 0.5 0.5"
         shadow="receive: true; cast:true;" 
         dynamic-body
         class="interactable"
@@ -52,20 +54,35 @@
         draggable
         droppable
         stretchable 
+        highlight-on-hover
+        physics-grab-replace="offset: 0 0 -0.2; rotation: 0 90 0"
         ></a-box>
       <a-sphere 
-        position="0 2 -5" 
-        radius="0.5" 
+        position="1 2 -5" 
+        radius="0.25" 
         color="#EF2D5E" 
         shadow="receive: true; cast:true;" 
         dynamic-body
         class="interactable"
-        grabbable
-        hoverable
-        draggable
-        droppable
-        stretchable
+        hoverable 
+        grabbable 
+        stretchable 
+        draggable 
+        droppable 
+        highlight-on-hover
+        physics-grab-replace="offset: 0 0 -0.2; rotation: 0 90 0"
         ></a-sphere>
+
+      <a-box 
+        position="0 0.25 -5" 
+        rotation="0 0 0" 
+        color="brown" 
+        shadow="receive: true; cast:true;" 
+        depth="1.2" 
+        height="1" 
+        width="5" 
+        static-body
+        ></a-box>
 
       <a-plane scale="100 100 100" position="0 -.1 0" rotation="90 0 0" static-body></a-plane>
 
@@ -164,6 +181,80 @@
         }
       }
     });
+
+    AFRAME.registerComponent('highlight-on-hover', {
+      schema: {
+        color: {type: 'color', default: '#FFD700'} // or couleur originale stockée
+      },
+
+      init: function () {
+        const el = this.el;
+        this.originalColor = (el.getAttribute('material') || {}).color || '#FFF';
+
+        el.addEventListener('hover-start', () => {
+          el.setAttribute('material', 'color', this.data.color);
+        });
+
+        el.addEventListener('hover-end', () => {
+          el.setAttribute('material', 'color', this.originalColor);
+        });
+      }
+    });
+
+
+    AFRAME.registerComponent('physics-grab-replace', {
+      schema: {
+        offset: {type: 'vec3', default: {x: 0, y: 0, z: 0}}, // position locale dans la main
+        rotation: {type: 'vec3', default: {x: 0, y: 0, z: 0}} // orientation locale
+      },
+
+      init: function () {
+        const el = this.el;
+
+        el.addEventListener('grab-start', (evt) => {
+          const hand = evt.detail.hand; // entité main (super-hands)
+          // on supprime le body physique temporairement
+          el.removeAttribute('dynamic-body');
+
+          // attache l’objet à la main
+          hand.add(el);
+
+          // place l’objet dans la main avec offset
+          el.object3D.position.set(this.data.offset.x, this.data.offset.y, this.data.offset.z);
+          el.object3D.rotation.set(
+            THREE.MathUtils.degToRad(this.data.rotation.x),
+            THREE.MathUtils.degToRad(this.data.rotation.y),
+            THREE.MathUtils.degToRad(this.data.rotation.z)
+          );
+
+          // Option : cacher le modèle de la main
+          const handMesh = hand.getObject3D('mesh');
+          if (handMesh) handMesh.visible = false;
+        });
+
+        el.addEventListener('grab-end', (evt) => {
+          const hand = evt.detail.hand;
+
+          // détache de la main → remet dans la scène
+          this.el.sceneEl.appendChild(el);
+
+          // réactive la physique
+          el.setAttribute('dynamic-body', '');
+
+          // applique la vélocité de la main (momentum)
+          const velocity = evt.detail.linearVelocity || {x:0,y:0,z:0};
+          const angularVelocity = evt.detail.angularVelocity || {x:0,y:0,z:0};
+
+          el.body.velocity.set(velocity.x, velocity.y, velocity.z);
+          el.body.angularVelocity.set(angularVelocity.x, angularVelocity.y, angularVelocity.z);
+
+          // remonte la main visible
+          const handMesh = hand.getObject3D('mesh');
+          if (handMesh) handMesh.visible = true;
+        });
+      }
+    });
+
 
 
     /*const playerRig = document.querySelector("#player")
