@@ -219,7 +219,7 @@
         el.addEventListener('grab-start', (evt) => {
           const tracked = hand.components['tracked-controls'];
           if (!tracked || !tracked.controller || !tracked.controller.gamepad) return;
-          if (gamepad.buttons[1]?.pressed) {
+          if (tracked.controller.gamepad.buttons[1]?.pressed) {
             let target = evt.detail.target;
             target.object3D.position.set(this.data.offset.x, this.data.offset.y, this.data.offset.z);
             target.object3D.rotation.set(this.data.rotation.x, this.data.rotation.y, this.data.rotation.z);
