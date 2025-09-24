@@ -218,9 +218,9 @@
         const el = this.el;
 
         el.addEventListener('grab-start', (evt) => {
-          el.removeAttribute('dynamic-body');
           const tracked = evt.detail.hand.components['tracked-controls'];
-          if (tracked.controller.gamepad.buttons[0]?.pressed) {
+          if (tracked.controller.gamepad.buttons[1]?.pressed) {
+            el.removeAttribute('dynamic-body');
             let target = evt.detail.target;
 
             evt.detail.hand.querySelector(this.data.socketClass).add(target);
