@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
@@ -23,12 +24,12 @@
         <a-camera></a-camera>
 
         <a-entity id="left-hand-rig">
-          <a-entity super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body>
+          <a-entity super-hands laser-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body>
             <a-entity class="grab-socket" position="0 0 -0.1" rotation="0 0 0"></a-entity>
           </a-entity>
         </a-entity>
         <a-entity  id="right-hand-rig">
-          <a-entity super-hands hand-controls="hand: right" sphere-collider="objects: .interactable">
+          <a-entity super-hands laser-controls="hand: right" sphere-collider="objects: .interactable">
             <a-entity class="grab-socket" position="0 0 -0.1" rotation="0 0 0"></a-entity>
           </a-entity>
         </a-entity>
@@ -217,66 +218,39 @@
         const el = this.el;
 
         el.addEventListener('grab-start', (evt) => {
+          el.removeAttribute('dynamic-body');
           const tracked = evt.detail.hand.components['tracked-controls'];
           if (tracked.controller.gamepad.buttons[0]?.pressed) {
             let target = evt.detail.target;
+
             evt.detail.hand.querySelector(this.data.socketClass).add(target);
             target.object3D.position.set(this.data.offset.x, this.data.offset.y, this.data.offset.z);
             target.object3D.rotation.set(this.data.rotation.x, this.data.rotation.y, this.data.rotation.z);
-            console.log(target.object3D.position);
 
             evt.detail.hand.getObject3D('mesh').visible = false;
           }
-          /*el.removeAttribute('dynamic-body');
-
-          const hand = evt.detail.hand;
-          let handPos = hand.getAttribute('position');
-          let handRot = hand.getAttribute('rotation');
-          const socket = hand.querySelector(this.data.socketClass);
-
-          if (socket) {
-
-            el.object3D.position.set(0, 0, 0);
-            el.object3D.rotation.set(0, 0, 0);
-
-            socket.add(el);
-
-            /*const socketPos = socket.getAttribute('position');
-            const socketRot = socket.getAttribute('rotation');
-            el.object3D.position.set(
-              this.data.offset.x + socketPos.x,
-              this.data.offset.y + socketPos.y,
-              this.data.offset.z + socketPos.z
-            );
-            el.object3D.rotation.set(
-              HREE.MathUtils.degToRad(this.data.rotation.x) + socketRot.x,
-              HREE.MathUtils.degToRad(this.data.rotation.y) + socketRot.y,
-              HREE.MathUtils.degToRad(this.data.rotation.z) + socketRot.z
-            );
-
-          }*/
         });
 
         el.addEventListener('grab-end', (evt) => {
-          el.setAttribute('dynamic-body', '');
+          let target = evt.detail.target;
 
-          el.sceneEl.add(el);
+          target.sceneEl.add(target);
 
-          /*const velocity = evt.detail.linearVelocity || {x:0,y:0,z:0};
+          const velocity = evt.detail.linearVelocity || {x:0,y:0,z:0};
           const angularVelocity = evt.detail.angularVelocity || {x:0,y:0,z:0};
-
-          el.addEventListener('body-loaded', () => {
-            el.body.velocity.set(velocity.x, velocity.y, velocity.z);
-            el.body.angularVelocity.set(angularVelocity.x, angularVelocity.y, angularVelocity.z);
-            let handPos = hand.getAttribute('position');
-            let handRot = hand.getAttribute('rotation');
-            el.object3D.position.set(handPos.x, handPos.y, handPos.z);
-            el.object3D.rotation.set(
-              THREE.MathUtils.degToRad(handRot.x),
-              THREE.MathUtils.degToRad(handRot.y),
-              THREE.MathUtils.degToRad(handRot.z)
-            );
-          }, {once:true});*/
+          let handPos = evt.detail.hand.getAttribute('position');
+          let handRot = evt.detail.hand.getAttribute('rotation');
+          target.object3D.position.set(handPos.x, handPos.y, handPos.z);
+          target.object3D.rotation.set(
+            THREE.MathUtils.degToRad(handRot.x),
+            THREE.MathUtils.degToRad(handRot.y),
+            THREE.MathUtils.degToRad(handRot.z)
+          );
+          console.log(target.object3D.position);
+          target.setAttribute('dynamic-body', '');
+          target.body.velocity.set(velocity.x, velocity.y, velocity.z);
+          target.body.angularVelocity.set(angularVelocity.x, angularVelocity.y, angularVelocity.z);
+          /**/
 
           const hand = evt.detail.hand;
           const mesh = hand.getObject3D('mesh');
