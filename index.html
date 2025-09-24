@@ -111,6 +111,83 @@
   </body>
 
   <script>
+    
+
+    AFRAME.registerComponent('highlight-on-hover', {
+      schema: {
+        color: {type: 'color', default: '#FFD700'} // or couleur originale stockée
+      },
+
+      init: function () {
+        const el = this.el;
+        this.originalColor = (el.getAttribute('material') || {}).color || '#FFF';
+
+        el.addEventListener('hover-start', () => {
+          el.setAttribute('material', 'color', this.data.color);
+        });
+
+        el.addEventListener('hover-end', () => {
+          el.setAttribute('material', 'color', this.originalColor);
+        });
+      }
+    });
+
+
+    AFRAME.registerComponent('physics-grab', {
+      schema: {
+        socketClass: {type: 'string', default: '.grab-socket'},
+        offset: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
+        rotation: {type: 'vec3', default: {x: 0, y: 0, z: 0}}
+      },
+
+      init: function () {
+        const el = this.el;
+
+        el.addEventListener('grab-start', (evt) => {
+          const tracked = evt.detail.hand.components['tracked-controls'];
+          if (tracked.controller.gamepad.buttons[0]?.pressed) {
+            el.removeAttribute('dynamic-body');
+            let target = evt.detail.target;
+
+            evt.detail.hand.querySelector(this.data.socketClass).add(target);
+            target.object3D.position.set(this.data.offset.x, this.data.offset.y, this.data.offset.z);
+            target.object3D.rotation.set(this.data.rotation.x, this.data.rotation.y, this.data.rotation.z);
+
+            evt.detail.hand.getObject3D('mesh').visible = false;
+          }
+        });
+
+        el.addEventListener('grab-end', (evt) => {
+          let target = evt.detail.target;
+
+          target.sceneEl.add(target);
+
+          const velocity = evt.detail.linearVelocity || {x:0,y:0,z:0};
+          const angularVelocity = evt.detail.angularVelocity || {x:0,y:0,z:0};
+          let handPos = evt.detail.hand.getAttribute('position');
+          let handRot = evt.detail.hand.getAttribute('rotation');
+          target.object3D.position.set(handPos.x, handPos.y, handPos.z);
+          target.object3D.rotation.set(
+            THREE.MathUtils.degToRad(handRot.x),
+            THREE.MathUtils.degToRad(handRot.y),
+            THREE.MathUtils.degToRad(handRot.z)
+          );
+          target.setAttribute('dynamic-body', '');
+          target.body.velocity.set(velocity.x, velocity.y, velocity.z);
+          target.body.angularVelocity.set(angularVelocity.x, angularVelocity.y, angularVelocity.z);
+          /**/
+
+          const hand = evt.detail.hand;
+          const mesh = hand.getObject3D('mesh');
+          if (mesh) mesh.visible = true;
+        });
+      }
+    });
+
+
+
+
+    /*
     AFRAME.registerComponent('joystick-locomotion', {
       schema: {
         moveSpeed: { type: 'number', default: 0.1 },
@@ -187,82 +264,8 @@
         }
       }
     });
-
-    AFRAME.registerComponent('highlight-on-hover', {
-      schema: {
-        color: {type: 'color', default: '#FFD700'} // or couleur originale stockée
-      },
-
-      init: function () {
-        const el = this.el;
-        this.originalColor = (el.getAttribute('material') || {}).color || '#FFF';
-
-        el.addEventListener('hover-start', () => {
-          el.setAttribute('material', 'color', this.data.color);
-        });
-
-        el.addEventListener('hover-end', () => {
-          el.setAttribute('material', 'color', this.originalColor);
-        });
-      }
-    });
-
-
-    AFRAME.registerComponent('physics-grab', {
-      schema: {
-        socketClass: {type: 'string', default: '.grab-socket'},
-        offset: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
-        rotation: {type: 'vec3', default: {x: 0, y: 0, z: 0}}
-      },
-
-      init: function () {
-        const el = this.el;
-
-        el.addEventListener('grab-start', (evt) => {
-          const tracked = evt.detail.hand.components['tracked-controls'];
-          if (tracked.controller.gamepad.buttons[0]?.pressed) {
-            el.removeAttribute('dynamic-body');
-            let target = evt.detail.target;
-
-            evt.detail.hand.querySelector(this.data.socketClass).add(target);
-            target.object3D.position.set(this.data.offset.x, this.data.offset.y, this.data.offset.z);
-            target.object3D.rotation.set(this.data.rotation.x, this.data.rotation.y, this.data.rotation.z);
-
-            evt.detail.hand.getObject3D('mesh').visible = false;
-          }
-        });
-
-        el.addEventListener('grab-end', (evt) => {
-          let target = evt.detail.target;
-
-          target.sceneEl.add(target);
-
-          const velocity = evt.detail.linearVelocity || {x:0,y:0,z:0};
-          const angularVelocity = evt.detail.angularVelocity || {x:0,y:0,z:0};
-          let handPos = evt.detail.hand.getAttribute('position');
-          let handRot = evt.detail.hand.getAttribute('rotation');
-          target.object3D.position.set(handPos.x, handPos.y, handPos.z);
-          target.object3D.rotation.set(
-            THREE.MathUtils.degToRad(handRot.x),
-            THREE.MathUtils.degToRad(handRot.y),
-            THREE.MathUtils.degToRad(handRot.z)
-          );
-          target.setAttribute('dynamic-body', '');
-          target.body.velocity.set(velocity.x, velocity.y, velocity.z);
-          target.body.angularVelocity.set(angularVelocity.x, angularVelocity.y, angularVelocity.z);
-          /**/
-
-          const hand = evt.detail.hand;
-          const mesh = hand.getObject3D('mesh');
-          if (mesh) mesh.visible = true;
-        });
-      }
-    });
-
-
-
-
-    /*const playerRig = document.querySelector("#player")
+    
+    const playerRig = document.querySelector("#player")
 
     function controllerReady(el) {
       const tc = el.components['tracked-controls'];
