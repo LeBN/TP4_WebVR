@@ -217,7 +217,18 @@
         const el = this.el;
 
         el.addEventListener('grab-start', (evt) => {
-          el.removeAttribute('dynamic-body');
+          const tracked = hand.components['tracked-controls'];
+          if (!tracked || !tracked.controller || !tracked.controller.gamepad) return;
+          if (gamepad.buttons[1]?.pressed) {
+            let target = evt.detail.target;
+            target.object3D.position.set(this.data.offset.x, this.data.offset.y, this.data.offset.z);
+            target.object3D.rotation.set(this.data.rotation.x, this.data.rotation.y, this.data.rotation.z);
+            evt.detail.hand.querySelector(this.data.socketClass).add(target);
+
+            const mesh = hand.getObject3D('mesh');
+            if (mesh) mesh.visible = false;
+          }
+          /*el.removeAttribute('dynamic-body');
 
           const hand = evt.detail.hand;
           let handPos = hand.getAttribute('position');
@@ -242,28 +253,35 @@
               HREE.MathUtils.degToRad(this.data.rotation.x) + socketRot.x,
               HREE.MathUtils.degToRad(this.data.rotation.y) + socketRot.y,
               HREE.MathUtils.degToRad(this.data.rotation.z) + socketRot.z
-            );*/
+            );
 
-          }
-
-          const mesh = hand.getObject3D('mesh');
-          if (mesh) mesh.visible = false;
+          }*/
         });
 
         el.addEventListener('grab-end', (evt) => {
           el.setAttribute('dynamic-body', '');
 
-          const velocity = evt.detail.linearVelocity || {x:0,y:0,z:0};
+          el.sceneEl.add(el);
+
+          /*const velocity = evt.detail.linearVelocity || {x:0,y:0,z:0};
           const angularVelocity = evt.detail.angularVelocity || {x:0,y:0,z:0};
 
           el.addEventListener('body-loaded', () => {
             el.body.velocity.set(velocity.x, velocity.y, velocity.z);
             el.body.angularVelocity.set(angularVelocity.x, angularVelocity.y, angularVelocity.z);
+            let handPos = hand.getAttribute('position');
+            let handRot = hand.getAttribute('rotation');
+            el.object3D.position.set(handPos.x, handPos.y, handPos.z);
+            el.object3D.rotation.set(
+              THREE.MathUtils.degToRad(handRot.x),
+              THREE.MathUtils.degToRad(handRot.y),
+              THREE.MathUtils.degToRad(handRot.z)
+            );
           }, {once:true});
 
           const hand = evt.detail.hand;
           const mesh = hand.getObject3D('mesh');
-          if (mesh) mesh.visible = true;
+          if (mesh) mesh.visible = true;*/
         });
       }
     });
