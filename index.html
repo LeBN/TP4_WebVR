@@ -40,6 +40,7 @@
                               colliderEndEvent: collisions;
                               colliderEndEventProperty: clearedEls;"
         ></a-mixin>
+        <a-asset-item id="gun" src="./assets/NintendoZapper.glb"></a-asset-item>
       </a-assets>
 
       <a-entity 
@@ -50,19 +51,19 @@
         <a-camera></a-camera>
 
         <a-entity id="left-hand-rig">
-          <a-entity mixin="physics-hands" grab super-hands hand-controls="hand: left" hand-tracking-controls="hand: left;" sphere-collider="objects: .interactable" dynamic-body>
-        </a-entity>
+          <a-entity mixin="physics-hands" grab super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body>
+          </a-entity>
         </a-entity>
         <a-entity  id="right-hand-rig">
           <a-entity mixin="physics-hands" grab super-hands hand-controls="hand: right" sphere-collider="objects: .interactable">
-          <a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: right;"></a-entity>
           </a-entity>
         </a-entity>
 
         <!--<a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .raycastable"   ></a-entity>
         <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .raycastable" ></a-entity>
 
-        
+        <a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: left;"></a-entity>
+        <a-entity sphere-collider="objects: a-box" hand-tracking-controls="hand: right;"></a-entity>
             <a-entity class="grab-socket" position="0 0 -0.1" rotation="0 0 0"></a-entity>
           sphere-collider="objects: a-box"
           sphere-collider="objects: a-box"
@@ -79,13 +80,7 @@
         shadow="receive: true; cast:true;" 
         dynamic-body
         class="interactable"
-        grabbable
-        hoverable
-        draggable
-        droppable
-        stretchable 
-        highlight-on-hover
-        mixin="cube all-interactions"
+        mixin="all-interactions"
         ></a-box>
       <a-sphere 
         position="1 2 -5" 
@@ -98,10 +93,30 @@
         grabbable 
         stretchable 
         draggable 
-        droppable 
-        highlight-on-hover
-        physics-grab
+        droppable
+        mixin="all-interactions"
         ></a-sphere>
+
+      <a-entity
+        position="0 1.2 -5" 
+        rotation="0 180 0" 
+        color="#FFC65D"
+        dynamic-body="shape: none"
+        shape__handle="shape: box; halfExtents: 0.01 0.075 0.05; offset: 0 -.015 -.01;"
+        shape__cylinder="shape: box; halfExtents: 0.01 0.01 0.16; radiusTop: 0.01; radiusBottom: 0.0075; height: 0.115; offset: 0 .05 .1; orientation: 0 0 0 1; "
+        class="interactable"
+        mixin="all-interactions"
+        material="opacity: 0"
+        >
+        <a-entity 
+          gltf-model="#gun"
+          position="0 0 0"
+          rotation="0 0 0"
+          mixin="cube all-interactions"
+          shadow="receive: true; cast:true;" 
+        ></a-entity>
+      </a-entity>
+      
 
       <a-box 
         position="0 0.25 -5" 
