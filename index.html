@@ -50,12 +50,12 @@
         <a-camera></a-camera>
 
         <a-entity id="left-hand-rig">
-          <a-entity mixin="physics-hands" grab super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body>
+          <a-entity mixin="physics-hands" super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body>
             <a-entity class="grab-socket" position="0 0 -0.1" rotation="0 0 0"></a-entity>
           </a-entity>
         </a-entity>
         <a-entity  id="right-hand-rig">
-          <a-entity mixin="physics-hands" grab super-hands hand-controls="hand: right" sphere-collider="objects: .interactable">
+          <a-entity mixin="physics-hands" super-hands hand-controls="hand: right" sphere-collider="objects: .interactable">
             <a-entity class="grab-socket" position="0 0 -0.1" rotation="0 0 0"></a-entity>
           </a-entity>
         </a-entity>
@@ -148,6 +148,11 @@
          })
        }
      });
+
+
+
+
+    /*
     
 
     AFRAME.registerComponent('highlight-on-hover', {
@@ -212,7 +217,7 @@
           target.setAttribute('dynamic-body', '');
           target.body.velocity.set(velocity.x, velocity.y, velocity.z);
           target.body.angularVelocity.set(angularVelocity.x, angularVelocity.y, angularVelocity.z);
-          /**/
+          
 
           const hand = evt.detail.hand;
           const mesh = hand.getObject3D('mesh');
@@ -221,10 +226,6 @@
       }
     });
 
-
-
-
-    /*
     AFRAME.registerComponent('joystick-locomotion', {
       schema: {
         moveSpeed: { type: 'number', default: 0.1 },
