@@ -23,7 +23,7 @@
         <a-camera></a-camera>
 
         <a-entity id="left-hand-rig">
-          <a-entity constraint="target: #left-hand-rig;" super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body></a-entity>
+          <a-entity super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body></a-entity>
         </a-entity>
         <a-entity  id="right-hand-rig">
           <a-entity super-hands hand-controls="hand: right" sphere-collider="objects: .interactable"></a-entity>
@@ -204,22 +204,17 @@
 
     AFRAME.registerComponent('physics-grab-replace', {
       schema: {
-        offset: {type: 'vec3', default: {x: 0, y: 0, z: 0}}, // position locale dans la main
-        rotation: {type: 'vec3', default: {x: 0, y: 0, z: 0}} // orientation locale
+        offset: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
+        rotation: {type: 'vec3', default: {x: 0, y: 0, z: 0}}
       },
 
       init: function () {
         const el = this.el;
 
         el.addEventListener('grab-start', (evt) => {
-          const hand = evt.detail.hand; // entité main (super-hands)
-          // on supprime le body physique temporairement
           el.removeAttribute('dynamic-body');
 
-          // attache l’objet à la main
-          hand.add(el);
-
-          // place l’objet dans la main avec offset
+          // applique l’offset/rotation locale
           el.object3D.position.set(this.data.offset.x, this.data.offset.y, this.data.offset.z);
           el.object3D.rotation.set(
             THREE.MathUtils.degToRad(this.data.rotation.x),
@@ -227,33 +222,30 @@
             THREE.MathUtils.degToRad(this.data.rotation.z)
           );
 
-          // Option : cacher le modèle de la main
-          const handMesh = hand.getObject3D('mesh');
-          if (handMesh) handMesh.visible = false;
+          // optionnel: cacher la main
+          const hand = evt.detail.hand;
+          const mesh = hand.getObject3D('mesh');
+          if (mesh) mesh.visible = false;
         });
 
         el.addEventListener('grab-end', (evt) => {
-          const hand = evt.detail.hand;
+          el.setAttribute('dynamic-body', ''); // redevient physique
 
-          // détache de la main → remet dans la scène
-          this.el.sceneEl.appendChild(el);
-
-          // réactive la physique
-          el.setAttribute('dynamic-body', '');
-
-          // applique la vélocité de la main (momentum)
           const velocity = evt.detail.linearVelocity || {x:0,y:0,z:0};
           const angularVelocity = evt.detail.angularVelocity || {x:0,y:0,z:0};
 
-          el.body.velocity.set(velocity.x, velocity.y, velocity.z);
-          el.body.angularVelocity.set(angularVelocity.x, angularVelocity.y, angularVelocity.z);
+          el.addEventListener('body-loaded', () => {
+            el.body.velocity.set(velocity.x, velocity.y, velocity.z);
+            el.body.angularVelocity.set(angularVelocity.x, angularVelocity.y, angularVelocity.z);
+          }, {once:true});
 
-          // remonte la main visible
-          const handMesh = hand.getObject3D('mesh');
-          if (handMesh) handMesh.visible = true;
+          const hand = evt.detail.hand;
+          const mesh = hand.getObject3D('mesh');
+          if (mesh) mesh.visible = true;
         });
       }
     });
+
 
 
 
