@@ -23,10 +23,14 @@
         <a-camera></a-camera>
 
         <a-entity id="left-hand-rig">
-          <a-entity super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body></a-entity>
+          <a-entity super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body>
+            <a-entity class="grab-socket" position="0 0 -0.1" rotation="0 0 0"></a-entity>
+          </a-entity>
         </a-entity>
         <a-entity  id="right-hand-rig">
-          <a-entity super-hands hand-controls="hand: right" sphere-collider="objects: .interactable"></a-entity>
+          <a-entity super-hands hand-controls="hand: right" sphere-collider="objects: .interactable">
+            <a-entity class="grab-socket" position="0 0 -0.1" rotation="0 0 0"></a-entity>
+          </a-entity>
         </a-entity>
 
         <!--<a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .raycastable"   ></a-entity>
@@ -55,7 +59,7 @@
         droppable
         stretchable 
         highlight-on-hover
-        physics-grab-replace="offset: 0 0 -0.2; rotation: 0 90 0"
+        physics-grab="offset: 0 0 -0.2; rotation: 0 90 0"
         ></a-box>
       <a-sphere 
         position="1 2 -5" 
@@ -70,7 +74,7 @@
         draggable 
         droppable 
         highlight-on-hover
-        physics-grab-replace="offset: 0 0 -0.2; rotation: 0 90 0"
+        physics-grab="offset: 0 0 -0.2; rotation: 0 90 0"
         ></a-sphere>
 
       <a-box 
@@ -202,8 +206,9 @@
     });
 
 
-    AFRAME.registerComponent('physics-grab-replace', {
+    AFRAME.registerComponent('physics-grab', {
       schema: {
+        socketClass: {type: 'string', default: '.grab-socket'},
         offset: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
         rotation: {type: 'vec3', default: {x: 0, y: 0, z: 0}}
       },
@@ -214,16 +219,33 @@
         el.addEventListener('grab-start', (evt) => {
           el.removeAttribute('dynamic-body');
 
-          // applique l’offset/rotation locale
-          el.object3D.position.set(this.data.offset.x, this.data.offset.y, this.data.offset.z);
+          const hand = evt.detail.hand;
+          let handPos = hand.getAttribute('position');
+          let handRot = hand.getAttribute('rotation');
+          const socket = hand.querySelector(this.data.socketClass);
+          
+          if (socket) {
+            const socketPos = socket.getAttribute('position');
+            const socketRot = socket.getAttribute('rotation');
+            handPos = {
+              x: this.data.offset.x + socketPos.x,
+              y: this.data.offset.y + socketPos.y,
+              z: this.data.offset.z + socketPos.z
+            };
+            handRot = {
+              x: HREE.MathUtils.degToRad(this.data.rotation.x) + socketRot.x,
+              y: HREE.MathUtils.degToRad(this.data.rotation.y) + socketRot.y,
+              z: HREE.MathUtils.degToRad(this.data.rotation.z) + socketRot.z
+            };
+          }
+          /*el.object3D.position.set(this.data.offset.x, this.data.offset.y, this.data.offset.z);
           el.object3D.rotation.set(
             THREE.MathUtils.degToRad(this.data.rotation.x),
             THREE.MathUtils.degToRad(this.data.rotation.y),
             THREE.MathUtils.degToRad(this.data.rotation.z)
-          );
+          );*/
 
           // optionnel: cacher la main
-          const hand = evt.detail.hand;
           const mesh = hand.getObject3D('mesh');
           if (mesh) mesh.visible = false;
         });
