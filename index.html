@@ -14,7 +14,33 @@
       webxr="optionalFeatures: bounded-floor, hand-tracking"
       cursor="rayOrigin: mouse; fuse: false"
       raycaster="objects: .raycastable"
-      physics="debug: false">
+      physics="debug: true">
+
+      <a-assets>
+        <a-mixin id="all-interactions"
+                 hoverable grabbable stretchable draggable
+                 event-set__hoveron="_event: hover-start; material.opacity: 0.7; transparent: true"
+                 event-set__hoveroff="_event: hover-end; material.opacity: 1; transparent: false"
+                 dynamic-body
+        ></a-mixin>
+
+        <a-mixin id="grab-move"
+                 hoverable grabbable draggable
+                 event-set__hoveron="_event: hover-start; material.opacity: 0.7; transparent: true"
+                 event-set__hoveroff="_event: hover-end; material.opacity: 1; transparent: false"
+                 dynamic-body
+        ></a-mixin>
+        
+        <a-mixin id="physics-hands"
+                 physics-collider phase-shift
+                 collision-filter="collisionForces: false"
+                 static-body="shape: sphere; sphereRadius: 0.02"
+                 super-hands="colliderEvent: collisions;
+                              colliderEventProperty: els;
+                              colliderEndEvent: collisions;
+                              colliderEndEventProperty: clearedEls;"
+        ></a-mixin>
+      </a-assets>
 
       <a-entity 
         id="player" 
@@ -24,12 +50,12 @@
         <a-camera></a-camera>
 
         <a-entity id="left-hand-rig">
-          <a-entity id="l" super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body>
+          <a-entity mixin="physics-hands" grab super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body>
             <a-entity class="grab-socket" position="0 0 -0.1" rotation="0 0 0"></a-entity>
           </a-entity>
         </a-entity>
         <a-entity  id="right-hand-rig">
-          <a-entity super-hands hand-controls="hand: right" sphere-collider="objects: .interactable">
+          <a-entity mixin="physics-hands" grab super-hands hand-controls="hand: right" sphere-collider="objects: .interactable">
             <a-entity class="grab-socket" position="0 0 -0.1" rotation="0 0 0"></a-entity>
           </a-entity>
         </a-entity>
@@ -60,7 +86,7 @@
         droppable
         stretchable 
         highlight-on-hover
-        physics-grab
+        mixin="cube all-interactions"
         ></a-box>
       <a-sphere 
         position="1 2 -5" 
@@ -89,7 +115,7 @@
         static-body
         ></a-box>
 
-      <a-plane scale="100 100 100" position="0 -.1 0" rotation="90 0 0" static-body></a-plane>
+      <a-plane scale="100 100 100" position="0 -.1 0" rotation="90 0 0" visible="false" static-body></a-plane>
 
       <a-entity light="type:directional; castShadow:true;" position="1 1 1"></a-entity>
       <a-entity light="type: ambient; color: #111"></a-entity>
@@ -111,6 +137,17 @@
   </body>
 
   <script>
+    AFRAME.registerComponent('phase-shift', {
+       init: function () {
+         var el = this.el
+         el.addEventListener('gripdown', function () {
+           el.setAttribute('collision-filter', {collisionForces: true})
+         })
+         el.addEventListener('gripup', function () {
+           el.setAttribute('collision-filter', {collisionForces: false})
+         })
+       }
+     });
     
 
     AFRAME.registerComponent('highlight-on-hover', {
