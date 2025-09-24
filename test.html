@@ -1,68 +1,84 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <title>A-Frame VR Grab & Drop (physique)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Grab minimal - test</title>
+<script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+<script src="https://unpkg.com/super-hands@3.0.5/dist/super-hands.min.js"></script>
 
-  <!-- A-Frame -->
-  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+<script>
+AFRAME.registerComponent('defer-grabbable', {
+  schema: { enableOnModelLoaded: {default: true} },
+  init() {
+    // Si c'est un modèle glTF, n'activer grabbable qu'après model-loaded
+    if (this.el.tagName.toLowerCase() === 'a-asset-item' || this.el.getAttribute('gltf-model')) {
+      this.el.addEventListener('model-loaded', () => {
+        if (!this.el.hasAttribute('grabbable')) this.el.setAttribute('grabbable', '');
+      }, {once: true});
+      // retirer tout grabbable présent tant que le modèle charge
+      if (this.el.hasAttribute('grabbable')) this.el.removeAttribute('grabbable');
+    } else {
+      // élément simple : s'assurer qu'il est grabbable
+      if (!this.el.hasAttribute('grabbable')) this.el.setAttribute('grabbable', '');
+    }
+  }
+});
 
-  <!-- Physique (@c-frame/aframe-physics-system v4.x) -->
-  <script src="https://cdn.jsdelivr.net/npm/@c-frame/aframe-physics-system@4.2.2/dist/aframe-physics-system.min.js"></script>
-
-  <!-- super-hands (grab/hover/drag + sphere-collider) -->
-  <script src="https://unpkg.com/super-hands@3.0.5/dist/super-hands.min.js"></script>
-
-  <!-- (Optionnel) Environnement rapide -->
-  <script src="https://unpkg.com/aframe-environment-component@1.5.0/dist/aframe-environment-component.min.js"></script>
+// Composant pour éviter multi-grab/conflict : lock pendant le grab
+AFRAME.registerComponent('safe-grab', {
+  init() {
+    this.onStart = (e) => {
+      const el = e.target || e.detail?.target || this.el;
+      if (!el) return;
+      // marquer comme grabbed pour empêcher double handlers
+      el.setAttribute('data-is-grabbed','true');
+      // supprimer temporairement grabbable sur les enfants si besoin
+      el.querySelectorAll('[grabbable]').forEach(c => {
+        if (c !== el) c.removeAttribute('grabbable');
+      });
+    };
+    this.onEnd = (e) => {
+      const el = e.target || e.detail?.target || this.el;
+      if (!el) return;
+      el.removeAttribute('data-is-grabbed');
+      // remettre éventuellement grabbable sur les enfants (si tu veux)
+      // el.querySelectorAll('.may-be-grabbable').forEach(c => c.setAttribute('grabbable',''));
+    };
+    this.el.addEventListener('grab-start', this.onStart);
+    this.el.addEventListener('grab-end', this.onEnd);
+  },
+  remove() {
+    this.el.removeEventListener('grab-start', this.onStart);
+    this.el.removeEventListener('grab-end', this.onEnd);
+  }
+});
+</script>
 </head>
 <body>
-  <a-scene physics="debug: false; gravity: -9.81" renderer="antialias: true">
-    <a-assets></a-assets>
+<a-scene renderer="antialias: true">
+  <!-- rig à la bonne hauteur (1.6m) -->
+  <a-entity id="rig" position="0 1.6 0">
+    <a-entity camera look-controls wasd-controls></a-entity>
 
-    <!-- Sol (statique) -->
-    <a-plane static-body rotation="-90 0 0" width="20" height="20" color="#7BC8A4"></a-plane>
+    <!-- mains -->
+    <a-entity id="leftHand" hand-controls="hand: left" super-hands sphere-collider="objects: .grabbable"></a-entity>
+    <a-entity id="rightHand" hand-controls="hand: right" super-hands sphere-collider="objects: .grabbable"></a-entity>
+  </a-entity>
 
-    <!-- Quelques objets saisissables (dynamiques) -->
-    <a-box class="interactable" position="-0.6 1.2 -1.2" color="#4CC3D9"
-           dynamic-body grabbable geometry="depth:0.3;height:0.3;width:0.3"></a-box>
+  <!-- sol -->
+  <a-plane rotation="-90 0 0" width="20" height="20" color="#7BC8A4"></a-plane>
 
-    <a-sphere class="interactable" position="0.2 1.0 -1.3" radius="0.18" color="#EF2D5E"
-              dynamic-body grabbable></a-sphere>
+  <!-- objets simples (fonctionnent d'emblée) -->
+  <a-box class="grabbable" position="-0.5 1.2 -1.2" color="#4CC3D9"
+         grabbable hoverable draggable safe-grab></a-box>
 
-    <a-cylinder class="interactable" position="0.9 1.1 -1.0" radius="0.12" height="0.35" color="#FFC65D"
-                dynamic-body grabbable></a-cylinder>
+  <!-- exemple import glTF : grabbable activé seulement après model-loaded -->
+  <!-- remplace src par ton modèle si tu veux tester -->
+  <a-entity class="grabbable" gltf-model="https://cdn.aframe.io/test-models/models/box/box.gltf"
+            position="0.5 1.2 -1.2" defer-grabbable safe-grab></a-entity>
 
-    <!-- Rig + caméra + mains -->
-    <a-entity id="rig" position="0 1.6 0">
-      <a-entity camera look-controls wasd-controls></a-entity>
-
-      <!-- MAIN GAUCHE -->
-      <a-entity id="leftHand"
-                hand-controls="hand: left; handModelStyle: lowPoly; color: #ddd"
-                super-hands
-                sphere-collider="objects: .interactable"
-                static-body="shape: sphere; sphereRadius: 0.03"
-                physics-grab>
-      </a-entity>
-
-      <!-- MAIN DROITE -->
-      <a-entity id="rightHand"
-                hand-controls="hand: right; handModelStyle: lowPoly; color: #ddd"
-                super-hands
-                sphere-collider="objects: .interactable"
-                static-body="shape: sphere; sphereRadius: 0.03"
-                physics-grab>
-      </a-entity>
-    </a-entity>
-
-    <!-- Décor (optionnel) -->
-    <a-entity environment="preset: forest; lighting: distant; ground: flat; groundYScale: 2"></a-entity>
-
-    <!-- Aide visuelle -->
-    <a-text value="Saisis avec la gâchette (VR). Relâche pour drop."
-            position="-0.9 1.9 -1.5" width="2.5" color="#222"></a-text>
-  </a-scene>
+  <a-text value="Test grab. Si ça pète, copie la console." position="-0.9 2 -1.5" width="3"></a-text>
+</a-scene>
 </body>
 </html>

@@ -3,9 +3,9 @@
   <head>
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
     <script> delete AFRAME.components["grabbable"]; </script>
-    <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-environment-component@1.5.0/dist/aframe-environment-component.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@c-frame/aframe-physics-system@4.2.2/dist/aframe-physics-system.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.x/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
     <script src="https://unpkg.com/super-hands@3.0.5/dist/super-hands.min.js"></script>
   </head>
   <body>
@@ -19,12 +19,12 @@
       <a-entity 
         id="player" 
         position="0 0 0" 
-        joystick-locomotion="moveSpeed: 0.1; turnSpeed: 2">
+        movement-controls>
       
         <a-camera></a-camera>
 
         <a-entity id="left-hand-rig">
-          <a-entity super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body>
+          <a-entity id="l" super-hands hand-controls="hand: left" sphere-collider="objects: .interactable" dynamic-body>
             <a-entity class="grab-socket" position="0 0 -0.1" rotation="0 0 0"></a-entity>
           </a-entity>
         </a-entity>
@@ -60,7 +60,7 @@
         droppable
         stretchable 
         highlight-on-hover
-        physics-grab="offset: 0 0 -0.2; rotation: 0 90 0"
+        physics-grab
         ></a-box>
       <a-sphere 
         position="1 2 -5" 
@@ -75,7 +75,7 @@
         draggable 
         droppable 
         highlight-on-hover
-        physics-grab="offset: 0 0 -0.2; rotation: 0 90 0"
+        physics-grab
         ></a-sphere>
 
       <a-box 
@@ -151,6 +151,7 @@
       },
 
       tick() {
+        console.log(document.querySelector("#l").getAttribute("position"));
         const rig = this.el;
         const pos = rig.getAttribute('position');
         const rot = rig.getAttribute('rotation');
@@ -246,7 +247,6 @@
             THREE.MathUtils.degToRad(handRot.y),
             THREE.MathUtils.degToRad(handRot.z)
           );
-          console.log(target.object3D.position);
           target.setAttribute('dynamic-body', '');
           target.body.velocity.set(velocity.x, velocity.y, velocity.z);
           target.body.angularVelocity.set(angularVelocity.x, angularVelocity.y, angularVelocity.z);
