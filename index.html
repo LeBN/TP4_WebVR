@@ -219,7 +219,7 @@
 
         el.addEventListener('grab-start', (evt) => {
           const tracked = evt.detail.hand.components['tracked-controls'];
-          if (tracked.controller.gamepad.buttons[1]?.pressed) {
+          if (tracked.controller.gamepad.buttons[0]?.pressed) {
             el.removeAttribute('dynamic-body');
             let target = evt.detail.target;
 

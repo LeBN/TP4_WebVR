@@ -1,63 +1,68 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
-    <script> delete AFRAME.components["grabbable"]; </script>
-    <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@c-frame/aframe-physics-system@4.2.2/dist/aframe-physics-system.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.x/dist/aframe-extras.min.js"></script>
-    <script src="https://unpkg.com/super-hands@3.0.5/dist/super-hands.min.js"></script>
-  </head>
-  <body>
-    <a-scene physics="debug: false">
-      <!-- Contrôleur de main -->
-      <a-entity id="rightHand" hand-controls="hand: right"></a-entity>
-      
-      <!-- Objet à saisir -->
-      <a-box id="grabBox"
-            position="0 1.25 -2"
-            color="#E95C4B"
-            dynamic-body></a-box>
-      
-      <a-plane position="0 0 -4"
-              rotation="-90 0 0"
-              width="10"
-              height="10"
-              color="#7BC8A4"
-              static-body></a-plane>
-    </a-scene>
-    
-  </body>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>A-Frame VR Grab & Drop (physique)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <script>
-    const hand = document.getElementById('rightHand');
-    const box = document.getElementById('grabBox');
-    let grabbing = false;
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
 
-    // Lorsque la gâchette est pressée, on "grab"
-    hand.addEventListener('triggerdown', function () {
-      // Vérifier si la main et la box sont proches
-      const handPos = hand.object3D.position;
-      const boxPos = box.object3D.position;
-      const distance = handPos.distanceTo(boxPos);
-      if (distance < 0.5) { // rayon de détection
-        grabbing = true;
-        box.setAttribute('dynamic-body', 'mass', 0); // la box n'est plus physique
-      }
-    });
+  <!-- Physique (@c-frame/aframe-physics-system v4.x) -->
+  <script src="https://cdn.jsdelivr.net/npm/@c-frame/aframe-physics-system@4.2.2/dist/aframe-physics-system.min.js"></script>
 
-    hand.addEventListener('triggerup', function () {
-      grabbing = false;
-      box.setAttribute('dynamic-body', 'mass', 1); // la box redevient physique
-    });
+  <!-- super-hands (grab/hover/drag + sphere-collider) -->
+  <script src="https://unpkg.com/super-hands@3.0.5/dist/super-hands.min.js"></script>
 
-    // Synchronisation de la position
-    hand.sceneEl.addEventListener('renderstart', function () {
-      hand.sceneEl.addEventListener('tick', function () {
-        if (grabbing) {
-          box.object3D.position.copy(hand.object3D.position);
-        }
-      });
-    });
-  </script>
+  <!-- (Optionnel) Environnement rapide -->
+  <script src="https://unpkg.com/aframe-environment-component@1.5.0/dist/aframe-environment-component.min.js"></script>
+</head>
+<body>
+  <a-scene physics="debug: false; gravity: -9.81" renderer="antialias: true">
+    <a-assets></a-assets>
+
+    <!-- Sol (statique) -->
+    <a-plane static-body rotation="-90 0 0" width="20" height="20" color="#7BC8A4"></a-plane>
+
+    <!-- Quelques objets saisissables (dynamiques) -->
+    <a-box class="interactable" position="-0.6 1.2 -1.2" color="#4CC3D9"
+           dynamic-body grabbable geometry="depth:0.3;height:0.3;width:0.3"></a-box>
+
+    <a-sphere class="interactable" position="0.2 1.0 -1.3" radius="0.18" color="#EF2D5E"
+              dynamic-body grabbable></a-sphere>
+
+    <a-cylinder class="interactable" position="0.9 1.1 -1.0" radius="0.12" height="0.35" color="#FFC65D"
+                dynamic-body grabbable></a-cylinder>
+
+    <!-- Rig + caméra + mains -->
+    <a-entity id="rig" position="0 1.6 0">
+      <a-entity camera look-controls wasd-controls></a-entity>
+
+      <!-- MAIN GAUCHE -->
+      <a-entity id="leftHand"
+                hand-controls="hand: left; handModelStyle: lowPoly; color: #ddd"
+                super-hands
+                sphere-collider="objects: .interactable"
+                static-body="shape: sphere; sphereRadius: 0.03"
+                physics-grab>
+      </a-entity>
+
+      <!-- MAIN DROITE -->
+      <a-entity id="rightHand"
+                hand-controls="hand: right; handModelStyle: lowPoly; color: #ddd"
+                super-hands
+                sphere-collider="objects: .interactable"
+                static-body="shape: sphere; sphereRadius: 0.03"
+                physics-grab>
+      </a-entity>
+    </a-entity>
+
+    <!-- Décor (optionnel) -->
+    <a-entity environment="preset: forest; lighting: distant; ground: flat; groundYScale: 2"></a-entity>
+
+    <!-- Aide visuelle -->
+    <a-text value="Saisis avec la gâchette (VR). Relâche pour drop."
+            position="-0.9 1.9 -1.5" width="2.5" color="#222"></a-text>
+  </a-scene>
+</body>
 </html>
