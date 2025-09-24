@@ -223,35 +223,35 @@
           let handPos = hand.getAttribute('position');
           let handRot = hand.getAttribute('rotation');
           const socket = hand.querySelector(this.data.socketClass);
-          
-          if (socket) {
-            const socketPos = socket.getAttribute('position');
-            const socketRot = socket.getAttribute('rotation');
-            handPos = {
-              x: this.data.offset.x + socketPos.x,
-              y: this.data.offset.y + socketPos.y,
-              z: this.data.offset.z + socketPos.z
-            };
-            handRot = {
-              x: HREE.MathUtils.degToRad(this.data.rotation.x) + socketRot.x,
-              y: HREE.MathUtils.degToRad(this.data.rotation.y) + socketRot.y,
-              z: HREE.MathUtils.degToRad(this.data.rotation.z) + socketRot.z
-            };
-          }
-          /*el.object3D.position.set(this.data.offset.x, this.data.offset.y, this.data.offset.z);
-          el.object3D.rotation.set(
-            THREE.MathUtils.degToRad(this.data.rotation.x),
-            THREE.MathUtils.degToRad(this.data.rotation.y),
-            THREE.MathUtils.degToRad(this.data.rotation.z)
-          );*/
 
-          // optionnel: cacher la main
+          if (socket) {
+
+            el.object3D.position.set(0, 0, 0);
+            el.object3D.rotation.set(0, 0, 0);
+
+            socket.add(el);
+
+            /*const socketPos = socket.getAttribute('position');
+            const socketRot = socket.getAttribute('rotation');
+            el.object3D.position.set(
+              this.data.offset.x + socketPos.x,
+              this.data.offset.y + socketPos.y,
+              this.data.offset.z + socketPos.z
+            );
+            el.object3D.rotation.set(
+              HREE.MathUtils.degToRad(this.data.rotation.x) + socketRot.x,
+              HREE.MathUtils.degToRad(this.data.rotation.y) + socketRot.y,
+              HREE.MathUtils.degToRad(this.data.rotation.z) + socketRot.z
+            );*/
+
+          }
+
           const mesh = hand.getObject3D('mesh');
           if (mesh) mesh.visible = false;
         });
 
         el.addEventListener('grab-end', (evt) => {
-          el.setAttribute('dynamic-body', ''); // redevient physique
+          el.setAttribute('dynamic-body', '');
 
           const velocity = evt.detail.linearVelocity || {x:0,y:0,z:0};
           const angularVelocity = evt.detail.angularVelocity || {x:0,y:0,z:0};
