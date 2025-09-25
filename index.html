@@ -167,6 +167,36 @@
        }
      });
 
+    const gun = document.querySelector("#gunRig");
+    gun.addEventListener('collide', (e) => {
+      if (e.detail.body.el === document.querySelector("#left-hand-rig a-entity") || e.detail.body.el === document.querySelector("#right-hand-rig a-entity")) {
+        if (e.detail.body.el.components['tracked-controls'].controller.gamepad.buttons[0].pressed) {
+          let lazer = document.createElement("a-entity");
+          lazer.setAttribute("geometry", "primitive: box; height: 0.02; width: 0.02; depth: .2;");
+          lazer.setAttribute("material", "color: red;");
+          lazer.setAttribute("position", {x: gun.object3D.position.x, y: gun.object3D.position.y, z: gun.object3D.position.z -1});
+          lazer.setAttribute("rotation", {x: gun.object3D.rotation.x, y: gun.object3D.rotation.y, z: gun.object3D.rotation.z});
+          lazer.setAttribute("lazer-particle", "");
+          document.querySelector('a-scene').appendChild(lazer);
+          console.log("Pew Pew");
+        }
+      };
+    });
+
+    AFRAME.registerComponent('lazer-particle', {
+      schema: { time: { type: 'int', default: 5000 } },
+      init: function () {
+        setTimeout(() => {
+          if (this.el.parentNode) {
+            this.el.parentNode.removeChild(this.el);
+          }
+        }, this.data.time);
+      }
+    });
+
+
+    /*
+
     AFRAME.registerComponent('highlight-on-hover', {
       schema: {
         color: {type: 'color', default: '#FFD700'} // or couleur originale stockée
@@ -185,11 +215,6 @@
         });
       }
     });
-
-
-
-
-    /*
     
 
 
